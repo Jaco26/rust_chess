@@ -1,19 +1,18 @@
 use std::collections::HashMap;
 
 use super::board::Board;
+use super::history::GameMove;
+use super::history::GameHistory;
 use super::piece::ChessPiece;
 use super::piece::Color::Black;
 use super::piece::Color::White;
 
-#[derive(Debug, Clone)]
-struct GameMove(String, String);
 
 #[derive(Debug, Clone)]
 pub struct Game {
   board: Board,
   active_pieces: HashMap<usize, ChessPiece>,
-  captured_pieces: Vec<ChessPiece>,
-  history: Vec<GameMove>,
+  history: GameHistory,
 }
 
 // Public
@@ -22,8 +21,7 @@ impl Game {
     let mut game = Game {
       board: Board::new(),
       active_pieces: HashMap::new(),
-      captured_pieces: Vec::new(),
-      history: Vec::new()
+      history: GameHistory::new(),
     };
 
     game.add_piece(ChessPiece::rook(White, "a1")).unwrap();
@@ -77,7 +75,6 @@ impl Game {
           Some(piece) => {
             let is_valid_move = true;
             if is_valid_move {
-              self.history.push(GameMove(from.to_owned(), to.to_owned()));
               piece.update_position(to);
             }
             else {
@@ -91,13 +88,23 @@ impl Game {
       None => return Err("Cannot move from tile that does not exist".to_owned())
     };
     let from_idx = self.board.index_of(from).unwrap();
+    let to_idx = self.board.index_of(to).unwrap();
     let moved_piece = self.active_pieces.remove(&from_idx).unwrap();
-    self.add_piece(moved_piece)
+    let maybe_capture = self.add_piece(moved_piece).unwrap();
+    self.history.push(from_idx, to_idx, maybe_capture);
+    Ok(())
   }
 
   pub fn undo_move(&mut self) -> Result<(), String> {
-    if let Some(GameMove(from, to)) = self.history.pop() {
-      return self.move_piece(&to, &from);
+    if let Some(GameMove { from, to, capture }) = self.history.pop() {
+      if let Some(mut piece) = self.active_pieces.remove(&to) {
+        piece.update_position(&self.board.tiles()[from]);
+        if let Some(capture) = capture {
+          self.add_piece(capture).map(|_| ())?;
+        }
+        return self.add_piece(piece).map(|_| ());
+      }
+      return Err("Could not undo move".to_owned());
     }
     Err("Move history is empty".to_owned())
   }
@@ -130,12 +137,11 @@ impl Game {
 
 // Private
 impl Game {
-  fn add_piece(&mut self, piece: ChessPiece) -> Result<(), String> {
+  fn add_piece(&mut self, piece: ChessPiece) -> Result<Option<ChessPiece>, String> {
     if let Some(idx) = self.board.index_of(&piece.position()) {
-      self.active_pieces.insert(idx, piece);
+      return Ok(self.active_pieces.insert(idx, piece));
     } else {
       return Err("Cannot add chess piece to non-existant tile".to_owned());
     }
-    Ok(())
   }
 }

@@ -17,7 +17,7 @@ pub struct Fork {
   fork_2: (usize, ChessPieceKind),
 }
 
-pub trait Brain {
+pub trait TheThinkyBits {
   /// Find all tiles a piece can validly move to
   fn available_tiles(&self, origin: usize, board: &Board, pieces: &Pieces) -> Vec<usize>;
   /// Find all cases where moving to a given tile whould result in a pin
