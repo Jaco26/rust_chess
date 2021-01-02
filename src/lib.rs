@@ -7,6 +7,8 @@ use std::process;
 pub fn game() {
   let mut game = v3::game::Game::new();
 
+  println!("{}", game.render_board());
+
   loop {
     let args = user_input().unwrap_or_else(|err| {
       eprintln!("Could not read user input: {:?}", err);
@@ -32,7 +34,7 @@ pub fn game() {
           match args.next() {
             Some(from) => match args.next() {
               Some(to) => match game.move_piece(from, to) {
-                Ok(_) => println!("Moved from {} to {}", from, to),
+                Ok(_) => println!("Moved from {} to {}\n{}", from, to, game.render_board()),
                 Err(msg) => eprintln!("{}", msg),
               },
               None => eprintln!("You must provide a tile to move to"),
@@ -42,7 +44,13 @@ pub fn game() {
         }
         else if command == "board" {
           println!("{}", game.render_board());
-        } 
+        }
+        else if command == "undo" {
+          match game.undo_move() {
+            Ok(()) => println!("Success!\n{}", game.render_board()),
+            Err(msg) => eprintln!("{}", msg),
+          };
+        }
         else {
           println!("Command: '{}' not recognized", command);
         }

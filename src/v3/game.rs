@@ -68,27 +68,36 @@ impl Game {
     }
   }
 
-  pub fn move_piece(&mut self, from: &str, to: &str) -> Result<(), &'static str> {
-    if let Some(idx) = self.board.index_of(from) {
-      if let Some(p) = self.pieces.get_mut(&idx) {
-        let is_valid_move = true;
-        // if valid move...
-        if is_valid_move {
-          self.history.push(GameMove(from.to_owned(), to.to_owned()));
-          p.update_position(to);
-        } else {
-          return Err("Invalid move");
+  pub fn move_piece(&mut self, from: &str, to: &str) -> Result<(), String> {
+    match self.board.index_of(from) {
+      Some(idx) => match self.board.index_of(to) {
+        Some(_) => match self.pieces.get_mut(&idx) {
+          Some(piece) => {
+            let is_valid_move = true;
+            if is_valid_move {
+              self.history.push(GameMove(from.to_owned(), to.to_owned()));
+              piece.update_position(to);
+            }
+            else {
+              return Err("Invalid move".to_owned());
+            }
+          }
+          None => return Err(format!("There is no piece on {}", from))
         }
-      } else {
-
-        return Err("There is no piece on this tile");
+        None => return Err("Cannot move to tile that does not exist".to_owned())
       }
-    } else {
-      return Err("This tile does not exist");
-    }
+      None => return Err("Cannot move from tile that does not exist".to_owned())
+    };
     let from_idx = self.board.index_of(from).unwrap();
     let moved_piece = self.pieces.remove(&from_idx).unwrap();
     self.add_piece(moved_piece)
+  }
+
+  pub fn undo_move(&mut self) -> Result<(), String> {
+    if let Some(GameMove(from, to)) = self.history.pop() {
+      return self.move_piece(&to, &from);
+    }
+    Err("Move history is empty".to_owned())
   }
 
   pub fn render_board(&self) -> String {
@@ -111,6 +120,9 @@ impl Game {
         Some(piece) => rv.push_str(&format!("| {} ", piece)),
         None =>        rv.push_str(&format!("|     ")),
       };
+      if (idx + 1) % 8 == 0 {
+        rv.push('|');
+      }
     }
     rv.push_str(&horizotal_divider());
     rv.push_str(
@@ -122,11 +134,11 @@ impl Game {
 
 // Private
 impl Game {
-  fn add_piece(&mut self, piece: ChessPiece) -> Result<(), &'static str> {
+  fn add_piece(&mut self, piece: ChessPiece) -> Result<(), String> {
     if let Some(idx) = self.board.index_of(&piece.position()) {
       self.pieces.insert(idx, piece);
     } else {
-      return Err("Cannot add chess piece to non-existant tile");
+      return Err("Cannot add chess piece to non-existant tile".to_owned());
     }
     Ok(())
   }
