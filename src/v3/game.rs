@@ -11,7 +11,8 @@ struct GameMove(String, String);
 #[derive(Debug, Clone)]
 pub struct Game {
   board: Board,
-  pieces: HashMap<usize, ChessPiece>,
+  active_pieces: HashMap<usize, ChessPiece>,
+  captured_pieces: Vec<ChessPiece>,
   history: Vec<GameMove>,
 }
 
@@ -20,7 +21,8 @@ impl Game {
   pub fn new() -> Game {
     let mut game = Game {
       board: Board::new(),
-      pieces: HashMap::new(),
+      active_pieces: HashMap::new(),
+      captured_pieces: Vec::new(),
       history: Vec::new()
     };
 
@@ -63,7 +65,7 @@ impl Game {
 
   pub fn peek_tile(&self, pos: &str) -> Option<&ChessPiece> {
     match self.board.index_of(pos) {
-      Some(idx) => self.pieces.get(&idx),
+      Some(idx) => self.active_pieces.get(&idx),
       None => None
     }
   }
@@ -71,7 +73,7 @@ impl Game {
   pub fn move_piece(&mut self, from: &str, to: &str) -> Result<(), String> {
     match self.board.index_of(from) {
       Some(idx) => match self.board.index_of(to) {
-        Some(_) => match self.pieces.get_mut(&idx) {
+        Some(_) => match self.active_pieces.get_mut(&idx) {
           Some(piece) => {
             let is_valid_move = true;
             if is_valid_move {
@@ -89,7 +91,7 @@ impl Game {
       None => return Err("Cannot move from tile that does not exist".to_owned())
     };
     let from_idx = self.board.index_of(from).unwrap();
-    let moved_piece = self.pieces.remove(&from_idx).unwrap();
+    let moved_piece = self.active_pieces.remove(&from_idx).unwrap();
     self.add_piece(moved_piece)
   }
 
@@ -103,20 +105,14 @@ impl Game {
   pub fn render_board(&self) -> String {
     let mut rv = String::new();
     let horizotal_divider = || {
-      let mut rv = String::from("");
-      rv.push_str(&format!("\n |"));
-      for _ in 0..8 {
-        rv.push_str("-----|");
-      }
-      rv.push('\n');
-      rv
+      "\n |-----|-----|-----|-----|-----|-----|-----|-----|\n"
     };
     for (idx, tile) in self.board.tiles().iter().enumerate() {
       if idx % 8 == 0 {
         rv.push_str(&horizotal_divider());
         rv.push_str(&tile.chars().nth(1).unwrap().to_string());
       }
-      match self.pieces.get(&idx) {
+      match self.active_pieces.get(&idx) {
         Some(piece) => rv.push_str(&format!("| {} ", piece)),
         None =>        rv.push_str(&format!("|     ")),
       };
@@ -126,7 +122,7 @@ impl Game {
     }
     rv.push_str(&horizotal_divider());
     rv.push_str(
-      "    a     b     c     d     e     f     g     h"
+      "    a     b     c     d     e     f     g     h    "
     );
     rv
   }
@@ -136,7 +132,7 @@ impl Game {
 impl Game {
   fn add_piece(&mut self, piece: ChessPiece) -> Result<(), String> {
     if let Some(idx) = self.board.index_of(&piece.position()) {
-      self.pieces.insert(idx, piece);
+      self.active_pieces.insert(idx, piece);
     } else {
       return Err("Cannot add chess piece to non-existant tile".to_owned());
     }
