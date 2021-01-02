@@ -6,11 +6,13 @@ use super::history::GameHistory;
 use super::piece::ChessPiece;
 use super::piece::Color::Black;
 use super::piece::Color::White;
+use super::brain::PawnBrain;
+use super::brain::TheThinkyBits;
 
 
 #[derive(Debug, Clone)]
 pub struct Game {
-  board: Board,
+  pub board: Board,
   active_pieces: HashMap<usize, ChessPiece>,
   history: GameHistory,
 }
@@ -132,6 +134,20 @@ impl Game {
       "    a     b     c     d     e     f     g     h    "
     );
     rv
+  }
+
+  pub fn peek_available_moves(&self, pos: &str) -> Result<String, String> {
+    let mut rv = String::new();
+    match self.board.index_of(pos) {
+      Some(idx) => {
+        let moves = PawnBrain::available_tiles(idx, &self.board, &self.active_pieces, None)?;
+        for idx in moves {
+          rv.push_str(&format!("{}, ", self.board.tiles()[idx]))
+        }
+      }
+      None => return Err("You provided a non-existant position".to_owned()),
+    }
+    Ok(rv)
   }
 }
 

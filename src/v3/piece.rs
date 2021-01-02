@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Color {
   Black,
   White,
@@ -55,6 +55,12 @@ impl ChessPiece {
       Queen => Some(9),
       _ => None,
     }
+  }
+  pub fn color(&self) -> &Color {
+    &self.color
+  }
+  pub fn kind(&self) -> &ChessPieceKind {
+    &self.kind
   }
   pub fn position(&self) -> String {
     self.position.to_string()

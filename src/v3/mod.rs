@@ -3,3 +3,4 @@ pub mod board;
 pub mod piece;
 pub mod brain;
 pub mod history;
+pub mod scanner;
