@@ -1,6 +1,6 @@
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Board {
   tiles: Vec<String>
 }
@@ -8,13 +8,16 @@ pub struct Board {
 impl Board {
   pub fn new() -> Board {
     let mut tiles = vec![];
-    for letter in vec!["a", "b", "c", "d", "e", "f", "g", "h"] {
-      for number in vec!["1", "2", "3", "4", "5", "6", "7", "8"] {
+    for number in vec!["8", "7", "6", "5", "4", "3", "2", "1"] {
+      for letter in vec!["a", "b", "c", "d", "e", "f", "g", "h"] {
         tiles.push(format!("{}{}", letter, number));
       }
     }
     Board { tiles }
   }
+  pub fn tiles(&self) -> Vec<String> {
+    self.tiles.clone()
+  } 
   pub fn index_of(&self, pos: &str) -> Option<usize> {
     self.tiles.iter().position(|x| x == pos)
   }

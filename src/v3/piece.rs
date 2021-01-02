@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone)]
 pub enum Color {
   Black,
@@ -18,6 +20,7 @@ pub struct ChessPiece {
   position: String,
 }
 
+// Constructors
 impl ChessPiece {
   pub fn pawn(color: Color, pos: &str) -> ChessPiece {
     ChessPiece { color, kind: ChessPieceKind::Pawn, position: pos.to_owned() }
@@ -39,6 +42,7 @@ impl ChessPiece {
   }
 }
 
+// Associated functions
 impl ChessPiece {
   #[allow(dead_code)]
   pub fn points(&self) -> Option<u8> {
@@ -58,5 +62,24 @@ impl ChessPiece {
   pub fn update_position(&mut self, pos: &str) {
     self.position = pos.to_owned();
   }
+  
 }
 
+
+impl fmt::Display for ChessPiece {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let color = match self.color {
+      Color::White => "w",
+      Color::Black => "b",
+    };
+    let kind = match self.kind {
+      ChessPieceKind::Pawn => "P",
+      ChessPieceKind::Knight => "N",
+      ChessPieceKind::Bishop => "B",
+      ChessPieceKind::Rook => "R",
+      ChessPieceKind::Queen => "Q",
+      ChessPieceKind::King => "K",
+    };
+    write!(f, "{}_{}", color, kind)
+  }
+}

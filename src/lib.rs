@@ -1,34 +1,65 @@
 mod v3;
 
-use std::env;
+use std::io;
+use std::io::Write;
+use std::process;
 
 pub fn game() {
   let mut game = v3::game::Game::new();
 
-  println!("");
+  loop {
+    let args = user_input().unwrap_or_else(|err| {
+      eprintln!("Could not read user input: {:?}", err);
+      process::exit(1);
+    });
 
-  let mut args = env::args();
-  let _program = args.next();
-  let command = args.next();
+    let mut args = args.split_whitespace();
 
-  match command {
-    Some(x) => {
-      if &x == "peek" {
-        let pos = args.next().unwrap();
-        println!("Peek tile at {}: {:?}", pos, game.peek_tile(&pos));
-      } else if &x == "move" {
-        let from = args.next().unwrap();
-        let to = args.next().unwrap();
-        match game.move_piece(&from, &to) {
-          Ok(_) => println!("Moved from {} to {}", from, to),
-          Err(msg) => eprintln!("{}", msg),
-        };
-      } else {
-        println!("Command: '{}' not recognized", x);
+    match args.next() {
+      Some(command) => {
+        if command == "peek" {
+          match args.next() {
+            Some(pos) => {
+              match game.peek_tile(pos) {
+                Some(piece) => println!("{}", piece),
+                None => println!("There is no piece on tile {}", pos),
+              };
+            },
+            None => eprintln!("You must provide a tile to peek")
+          };
+        }
+        else if command == "move" {
+          match args.next() {
+            Some(from) => match args.next() {
+              Some(to) => match game.move_piece(from, to) {
+                Ok(_) => println!("Moved from {} to {}", from, to),
+                Err(msg) => eprintln!("{}", msg),
+              },
+              None => eprintln!("You must provide a tile to move to"),
+            },
+            None => eprintln!("You must provide a tile to move from"),
+          }
+        }
+        else if command == "board" {
+          println!("{}", game.render_board());
+        } 
+        else {
+          println!("Command: '{}' not recognized", command);
+        }
+      },
+      None => {
+        println!("No command provided")
       }
-    },
-    None => {
-      println!("No command provided")
-    }
-  };
+    };
+    println!("");
+  }
+}
+
+fn user_input() -> Result<String, io::Error> {
+  print!("> ");
+  io::stdout().flush()?;
+  let mut rv = String::new();
+  io::stdin().read_line(&mut rv)?;
+  rv.pop();
+  Ok(rv.to_string())
 }
