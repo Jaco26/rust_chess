@@ -17,7 +17,10 @@ impl Board {
   }
   pub fn tiles(&self) -> Vec<String> {
     self.tiles.clone()
-  } 
+  }
+  pub fn coords_for(&self, idx: usize) -> Option<&String> {
+    self.tiles.get(idx)
+  }
   pub fn index_of(&self, pos: &str) -> Option<usize> {
     self.tiles.iter().position(|x| x == pos)
   }

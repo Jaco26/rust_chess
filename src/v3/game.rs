@@ -6,8 +6,10 @@ use super::history::GameHistory;
 use super::piece::ChessPiece;
 use super::piece::Color::Black;
 use super::piece::Color::White;
-use super::brain::PawnBrain;
-use super::brain::TheThinkyBits;
+use super::scanner::Direction;
+use super::scanner::generate_search_vector;
+// use super::brain::PawnBrain;
+// use super::brain::TheThinkyBits;
 
 
 #[derive(Debug, Clone)]
@@ -159,14 +161,39 @@ impl Game {
     let mut rv = String::new();
     match self.board.index_of(pos) {
       Some(idx) => {
-        let moves = PawnBrain::available_tiles(idx, &self.board, &self.active_pieces, None)?;
-        for idx in moves {
-          rv.push_str(&format!("{}, ", self.board.tiles()[idx]))
-        }
+        // let moves = PawnBrain::available_tiles(idx, &self.board, &self.active_pieces, None)?;
+        // for idx in moves {
+        //   rv.push_str(&format!("{}, ", self.board.tiles()[idx]))
+        // }
       }
       None => return Err("You provided a non-existant position".to_owned()),
     }
     Ok(rv)
+  }
+
+  pub fn generate_vector(&self, pos: &str, pattern: Vec<&str>) -> Result<String, String> {
+    let pattern = pattern
+      .iter()
+      .map(|x| {
+        match *x {
+          "w" | "up" => Ok(Direction::Up),
+          "d" | "right" => Ok(Direction::Right),
+          "s" | "down" => Ok(Direction::Down),
+          "a" | "left" => Ok(Direction::Left),
+          _ => Err(format!("Invalid direction pattern: {}", x))
+        }
+      })
+      .collect::<Result<Vec<_>, String>>()?;
+    
+    if let Some(idx) = self.board.index_of(pos) {
+      return Ok(generate_search_vector(idx, &pattern)
+        .iter()  
+        .fold(String::new(), |mut acc, idx| {
+          acc.push_str(&format!("{}, ", self.board.coords_for(*idx).unwrap()));
+          acc
+        }));
+    }
+    Err(format!("Cannot search from non-existent starting point: {}", pos))
   }
 }
 

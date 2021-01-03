@@ -4,6 +4,13 @@ use std::io;
 use std::io::Write;
 use std::process;
 
+pub fn sandbox() {
+  use v3::scanner::Direction::*;
+  use v3::scanner::generate_search_vector;
+
+  println!("{:?}", generate_search_vector(34, &vec![Up, Left]));
+}
+
 pub fn game() {
   let mut game = v3::game::Game::new();
 
@@ -74,6 +81,16 @@ pub fn game() {
 
         else if command == "history" {
           println!("{}", game.history(None));
+        }
+
+        else if command == "vector" {
+          if let Some(origin) = args.next() {
+            let pattern: Vec<&str> = args.collect();
+            match game.generate_vector(origin, pattern) {
+              Ok(txt) => println!("{}", txt),
+              Err(msg) => eprintln!("{}", msg),
+            };
+          }
         }
 
         else {
