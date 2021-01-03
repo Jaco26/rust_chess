@@ -1,15 +1,20 @@
 use std::collections::HashMap;
 
 use super::board::Board;
+
 use super::history::GameMove;
 use super::history::GameHistory;
+
 use super::piece::ChessPiece;
 use super::piece::Color::Black;
 use super::piece::Color::White;
+
 use super::scanner::Direction;
-use super::scanner::generate_search_vector;
-// use super::brain::PawnBrain;
-// use super::brain::TheThinkyBits;
+use super::scanner::recursive_tile_vector;
+
+use super::brain::PawnBrain;
+use super::brain::prelude::TheThinkyBits;
+
 
 
 #[derive(Debug, Clone)]
@@ -161,10 +166,10 @@ impl Game {
     let mut rv = String::new();
     match self.board.index_of(pos) {
       Some(idx) => {
-        // let moves = PawnBrain::available_tiles(idx, &self.board, &self.active_pieces, None)?;
-        // for idx in moves {
-        //   rv.push_str(&format!("{}, ", self.board.tiles()[idx]))
-        // }
+        let moves = PawnBrain::available_tiles(idx, &self.board, &self.active_pieces, None)?;
+        for idx in moves {
+          rv.push_str(&format!("{}, ", self.board.tile_at(idx).unwrap()));
+        }
       }
       None => return Err("You provided a non-existant position".to_owned()),
     }
@@ -186,10 +191,10 @@ impl Game {
       .collect::<Result<Vec<_>, String>>()?;
     
     if let Some(idx) = self.board.index_of(pos) {
-      return Ok(generate_search_vector(idx, &pattern)
+      return Ok(recursive_tile_vector(idx, &pattern, None)
         .iter()  
         .fold(String::new(), |mut acc, idx| {
-          acc.push_str(&format!("{}, ", self.board.coords_for(*idx).unwrap()));
+          acc.push_str(&format!("{}, ", self.board.tile_at(*idx).unwrap()));
           acc
         }));
     }

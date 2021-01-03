@@ -1,28 +1,7 @@
 
 pub enum Direction { Up, Right, Down, Left }
 
-/// Calculate an index given a starting point an vertor of steps to follow
-pub fn plot_move_from(origin: usize, steps: Vec<Direction>) -> Option<usize> {
-  let mut rv = origin as i32;
-
-  for step in steps {
-    let proposed = match step {
-      Direction::Up => rv - 8,
-      Direction::Right => rv + 1,
-      Direction::Down => rv + 8,
-      Direction::Left => rv - 1,
-    };
-    if proposed < 0 || proposed > 63 {
-      return None
-    }
-    rv = proposed;
-  }
-
-  Some(rv as usize)
-}
-
-
-fn transform_origin(origin: usize, direction: &Direction) -> Option<usize> {
+pub fn transform_origin(origin: usize, direction: &Direction) -> Option<usize> {
   let origin = origin as i32;
 
   let proposed = match direction {
@@ -43,7 +22,7 @@ fn transform_origin(origin: usize, direction: &Direction) -> Option<usize> {
 }
 
 /// Recursively generate a vector of tile indices based on the provided pattern
-pub fn generate_search_vector(origin: usize, pattern: &Vec<Direction>) -> Vec<usize> {
+pub fn recursive_tile_vector(origin: usize, pattern: &Vec<Direction>, count: Option<usize>) -> Vec<usize> {
   let mut rv = vec![];
   let mut origin = origin;
   for step in pattern {
@@ -54,8 +33,20 @@ pub fn generate_search_vector(origin: usize, pattern: &Vec<Direction>) -> Vec<us
       None => return rv
     };
   }
-  rv.push(origin);
-  rv.append(&mut generate_search_vector(origin, pattern));
-  rv
+  match count {
+    Some(count) if count > 0 => {
+      rv.push(origin);
+      rv.append(&mut recursive_tile_vector(origin, pattern, Some(count - 1)));
+      rv
+    }
+    Some(_) => { // can assume count is 0
+      rv
+    }
+    None => {
+      rv.push(origin);
+      rv.append(&mut recursive_tile_vector(origin, pattern, None));
+      rv
+    }
+  }
 }
 

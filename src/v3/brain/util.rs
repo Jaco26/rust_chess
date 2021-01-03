@@ -1,5 +1,6 @@
-use crate::v3::brain::Pieces;
 use crate::v3::piece::ChessPiece;
+use crate::v3::brain::prelude::Pieces;
+
 
 pub fn peek_tile(idx: usize, pieces: &Pieces) -> Option<&ChessPiece> {
   pieces.get(&idx)

@@ -6,9 +6,9 @@ use std::process;
 
 pub fn sandbox() {
   use v3::scanner::Direction::*;
-  use v3::scanner::generate_search_vector;
+  use v3::scanner::recursive_tile_vector;
 
-  println!("{:?}", generate_search_vector(34, &vec![Up, Left]));
+  println!("{:?}", recursive_tile_vector(61, &vec![Up], Some(4)));
 }
 
 pub fn game() {
