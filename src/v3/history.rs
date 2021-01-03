@@ -1,3 +1,4 @@
+use std::ops::Range;
 use super::piece::ChessPiece;
 
 #[derive(Debug, Clone)]
@@ -25,5 +26,11 @@ impl GameHistory {
   }
   pub fn pop(&mut self) -> Option<GameMove> {
     self.turns.pop()
+  }
+  pub fn slice(&self, range: Option<Range<usize>>) -> &[GameMove] {
+    match range {
+      Some(range) => &self.turns[range],
+      None => &self.turns[..]
+    }
   }
 }

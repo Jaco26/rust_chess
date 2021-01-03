@@ -12,7 +12,7 @@ use super::brain::TheThinkyBits;
 
 #[derive(Debug, Clone)]
 pub struct Game {
-  pub board: Board,
+  board: Board,
   active_pieces: HashMap<usize, ChessPiece>,
   history: GameHistory,
 }
@@ -134,6 +134,25 @@ impl Game {
       "    a     b     c     d     e     f     g     h    "
     );
     rv
+  }
+
+  pub fn history(&self, range: Option<std::ops::Range<usize>>) -> String {
+    self.history
+      .slice(range)
+      .iter()
+      .fold(String::new(), |mut acc, game_move| {
+        let from_pos = &self.board.tiles()[game_move.from];
+        let to_pos = &self.board.tiles()[game_move.to];
+        if game_move.capture.is_some() {
+          acc.push_str(
+            &format!("({} -> {} took {}), ", from_pos, to_pos, game_move.capture.as_ref().unwrap())
+          );
+        }
+        else {
+          acc.push_str(&format!("({} -> {}), ", from_pos, to_pos));
+        }
+        acc
+      })
   }
 
   pub fn peek_available_moves(&self, pos: &str) -> Result<String, String> {

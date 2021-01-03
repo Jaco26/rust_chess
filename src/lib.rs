@@ -7,8 +7,6 @@ use std::process;
 pub fn game() {
   let mut game = v3::game::Game::new();
 
-  // println!("{:?}", game.board.tiles());
-
   println!("{}", game.render_board());
 
   loop {
@@ -72,6 +70,10 @@ pub fn game() {
             }
             _ => eprintln!("Subcommand not recognized")
           }
+        }
+
+        else if command == "history" {
+          println!("{}", game.history(None));
         }
 
         else {
