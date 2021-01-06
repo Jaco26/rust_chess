@@ -33,4 +33,7 @@ impl GameHistory {
       None => &self.turns[..]
     }
   }
+  pub fn last(&self) -> Option<&GameMove> {
+    self.turns.last()
+  }
 }

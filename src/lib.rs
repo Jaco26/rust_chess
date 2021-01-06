@@ -64,16 +64,12 @@ pub fn game() {
 
         else if command == "moves" {
           match args.next() {
-            Some(sub_command) if sub_command == "for" => match args.next() {
-              Some(pos) => match game.peek_available_moves(pos) {
-                Ok(moves) => println!("{}", moves),
-                Err(msg) => eprintln!("{}", msg),
-              }
-              _ => eprintln!("You most provide a position for which you wish to see available moves")
-            }
             Some(pos) => match game.peek_available_moves(pos) {
+              Ok(moves) if moves.is_empty() => {
+                println!("No moves available for piece at {}", pos);
+              }
               Ok(moves) => println!("{}", moves),
-              Err(msg) => eprintln!("{}", msg),  
+              Err(msg) => eprintln!("{}", msg),
             }
             _ => eprintln!("Subcommand not recognized")
           }
@@ -91,6 +87,10 @@ pub fn game() {
               Err(msg) => eprintln!("{}", msg),
             };
           }
+        }
+
+        else if command == "help" {
+          help();
         }
 
         else {
@@ -112,4 +112,48 @@ fn user_input() -> Result<String, io::Error> {
   io::stdin().read_line(&mut rv)?;
   rv.pop();
   Ok(rv.to_string())
+}
+
+
+fn help() {
+  println!("
+    peek <position>               Show the piece at the given position>
+                                    > peek e2
+                                    w_P
+
+    board                         Renders the chess board.
+
+    move <from> <to>              Move a piece on the board.
+                                    > move e2 e4
+        
+    undo                          Undo the last move.
+
+
+    moves <from>                  PARTIALLY IMPLEMENTED (only implemented 
+                                  for pawns). Get list of tiles the 
+                                  piece at the given position can move to.
+                                    > moves e2
+
+    history                       Get a list of all moves made so far.
+
+    vector <from> ...direction    Get a list of tiles a piece would land on by 
+                                  following the provided directions. This was 
+                                  mostly implemented as a way to test internal 
+                                  path finding functions...
+
+                                  Direction argments can be:
+                                  'up' or 'w'
+                                  'right' or 'd'
+                                  'down' or 's'
+                                  'right' or 'a'
+                                  
+                                    > vector e2 up left
+                                    d3, c4, b5, a6,
+
+                                    > vector e2 up up left
+                                    d4, c6, b8,
+
+                                    > vector e2 up 
+                                    e3, e4, e5, e6, e7, e8"
+  );
 }

@@ -1,12 +1,14 @@
 use std::fmt;
 
+use crate::v3::scanner::Direction;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Color {
   Black,
   White,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ChessPieceKind {
   Pawn, Knight, Bishop,
   Rook, Queen, King,
@@ -42,7 +44,7 @@ impl ChessPiece {
   }
 }
 
-// Associated functions
+// Methods
 impl ChessPiece {
   #[allow(dead_code)]
   pub fn points(&self) -> Option<u8> {
@@ -68,7 +70,18 @@ impl ChessPiece {
   pub fn update_position(&mut self, pos: &str) {
     self.position = pos.to_owned();
   }
-  
+  pub fn forward_direction(&self) -> Direction {
+    match self.color() {
+      Color::Black => Direction::Down,
+      Color::White => Direction::Up,
+    }
+  }
+  pub fn backward_direction(&self) -> Direction {
+    match self.color() {
+      Color::Black => Direction::Up,
+      Color::White => Direction::Down,
+    }
+  }
 }
 
 

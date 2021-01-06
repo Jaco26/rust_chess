@@ -6,6 +6,7 @@ use super::history::GameMove;
 use super::history::GameHistory;
 
 use super::piece::ChessPiece;
+use super::piece::ChessPieceKind;
 use super::piece::Color::Black;
 use super::piece::Color::White;
 
@@ -166,9 +167,20 @@ impl Game {
     let mut rv = String::new();
     match self.board.index_of(pos) {
       Some(idx) => {
-        let moves = PawnBrain::available_tiles(idx, &self.board, &self.active_pieces, None)?;
-        for idx in moves {
-          rv.push_str(&format!("{}, ", self.board.tile_at(idx).unwrap()));
+        match self.active_pieces.get(&idx) {
+          Some(piece) => {
+            let moves = match piece.kind() {
+              ChessPieceKind::Pawn => {
+                PawnBrain::available_tiles(idx, &self.board, &self.active_pieces, Some(&self.history))?
+              }
+              _ => return Err("NotImplemented: Game.peek_available_moves is only implemented for pawns".to_owned())
+            };
+
+            for idx in moves {
+              rv.push_str(&format!("{}, ", self.board.tile_at(idx).unwrap()));
+            }
+          }
+          None => return Err(format!("There is no piece on tile {}", pos)),
         }
       }
       None => return Err("You provided a non-existant position".to_owned()),

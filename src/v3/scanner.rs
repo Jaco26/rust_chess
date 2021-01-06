@@ -2,7 +2,7 @@
 #[derive(Clone)]
 pub enum Direction { Up, Right, Down, Left }
 
-fn transform_origin(origin: usize, direction: &Direction) -> Option<usize> {
+pub fn transform_origin(origin: usize, direction: &Direction) -> Option<usize> {
   let origin = origin as i32;
 
   let proposed = match direction {
