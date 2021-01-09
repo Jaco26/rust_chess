@@ -14,6 +14,7 @@ use super::scanner::Direction;
 use super::scanner::recursive_tile_vector;
 
 use super::brain::PawnBrain;
+use super::brain::KnightBrain;
 use super::brain::prelude::TheThinkyBits;
 
 
@@ -79,11 +80,31 @@ impl Game {
   }
 
   pub fn move_piece(&mut self, from: &str, to: &str) -> Result<(), String> {
+    let pieces = self.active_pieces.clone();
     match self.board.index_of(from) {
-      Some(idx) => match self.board.index_of(to) {
-        Some(_) => match self.active_pieces.get_mut(&idx) {
+      Some(from_idx) => match self.board.index_of(to) {
+        Some(to_idx) => match self.active_pieces.get_mut(&from_idx) {
           Some(piece) => {
-            let is_valid_move = true;
+            let is_valid_move = match piece.kind() {
+              ChessPieceKind::Pawn => {
+                let available_moves = PawnBrain::available_tiles(from_idx, &self.board, &pieces, Some(&self.history))?;
+                if !available_moves.contains(&to_idx) {
+                  return Err(format!("Invalid move: Cannot move Pawn from {} to {}", from, to));
+                }
+                true
+              }
+              ChessPieceKind::Knight => {
+                let available_moves = KnightBrain::available_tiles(from_idx, &self.board, &pieces, None)?;
+                if !available_moves.contains(&to_idx) {
+                  return Err(format!("Invalid move: Cannot move Knight from {} to {}", from, to));
+                }
+                true
+              }
+              some_other_kind => {
+                println!("[warning] move checking is not implmeneted for {:?}", some_other_kind);
+                true
+              }
+            };
             if is_valid_move {
               piece.update_position(to);
             }
@@ -172,6 +193,9 @@ impl Game {
             let moves = match piece.kind() {
               ChessPieceKind::Pawn => {
                 PawnBrain::available_tiles(idx, &self.board, &self.active_pieces, Some(&self.history))?
+              }
+              ChessPieceKind::Knight => {
+                KnightBrain::available_tiles(idx, &self.board, &self.active_pieces, None)?
               }
               _ => return Err("NotImplemented: Game.peek_available_moves is only implemented for pawns".to_owned())
             };

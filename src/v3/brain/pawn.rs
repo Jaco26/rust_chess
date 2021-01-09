@@ -1,11 +1,10 @@
 use crate::v3::board::Board;
 use crate::v3::history::GameHistory;
-use crate::v3::history::GameMove;
 use crate::v3::brain::prelude::*;
-use crate::v3::piece::Color;
 use crate::v3::brain::util;
 use crate::v3::scanner::Direction;
-use crate::v3::scanner::recursive_tile_vector;
+use crate::v3::scanner::finite_tile_vector;
+use crate::v3::scanner::stop_at_piece;
 use crate::v3::scanner::transform_origin;
 use crate::v3::piece::ChessPieceKind;
 
@@ -25,10 +24,10 @@ impl TheThinkyBits for PawnBrain {
 
       let mut attacks = vec![];
       attacks.append(
-        &mut recursive_tile_vector(origin, &vec![piece.forward_direction(), Left], Some(1))
+        &mut finite_tile_vector(origin, &vec![piece.forward_direction(), Left], 1)
       );
       attacks.append(
-        &mut recursive_tile_vector(origin, &vec![piece.forward_direction(), Right], Some(1))
+        &mut finite_tile_vector(origin, &vec![piece.forward_direction(), Right], 1)
       );
 
       let mut attacks: Vec<usize> = attacks
@@ -84,8 +83,10 @@ impl TheThinkyBits for PawnBrain {
         false => 1
       };
 
+
+
       let mut forward_moves = vec![];
-      for idx in recursive_tile_vector(origin, &vec![piece.forward_direction()], Some(n_steps)) {
+      for idx in finite_tile_vector(origin, &vec![piece.forward_direction()], n_steps) {
         if let Some(_) = util::peek_tile(idx, pieces) {
           break;
         }
