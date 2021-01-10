@@ -117,3 +117,61 @@ pub fn scan_tiles(origin: usize, origin_color: &Color, pieces: &Pieces, directio
   Scan::new(origin, tile_vector, reachable_tiles, capturable)
 }
 
+pub struct TileVectorCtx<'a> {
+  pieces: &'a Pieces,
+  origin: usize,
+  origin_color: &'a Color,
+}
+
+impl<'a> TileVectorCtx<'a> {
+  pub fn new(pieces: &'a Pieces, origin: usize, origin_color: &'a Color) -> TileVectorCtx<'a> {
+    TileVectorCtx { pieces, origin, origin_color }
+  }
+}
+
+
+pub struct TileVector<'a> {
+  ctx: TileVectorCtx<'a>,
+  tiles: Vec<usize>,
+  cursor: usize,
+}
+
+impl<'a> TileVector<'a> {
+  pub fn new(pieces: &'a Pieces, origin: usize, directions: &Directions, count: Option<usize>) -> Result<TileVector<'a>, String> {
+    match pieces.get(&origin) {
+      Some(piece) => {
+        Ok(
+          TileVector {
+            ctx: TileVectorCtx::new(pieces, origin, piece.color()),
+            tiles: get_tile_vector(origin, directions, count),
+            cursor: 0
+          }
+        )
+      }
+      None => Err(format!("[TileVector- OriginError]: No piece found at origin {}", origin))
+    }
+  }
+  pub fn next_piece(&mut self) -> Option<&ChessPiece> {
+    while self.cursor < self.tiles.len() {
+      if let Some(piece) = self.ctx.pieces.get(&self.tiles[self.cursor]) {
+        self.cursor += 1;
+        return Some(piece)
+      }
+      self.cursor += 1
+    }
+    self.cursor = 0;
+    None
+  }
+  pub fn reachable_tiles(&mut self) -> Vec<usize> {
+    let origin_color = self.ctx.origin_color;
+    let rv = match self.next_piece() {
+      Some(piece) => match piece.color() == origin_color {
+        true => self.tiles[0..(self.cursor - 1)].to_vec(),
+        false => self.tiles[0..(self.cursor)].to_vec(),
+      }
+      None => self.tiles.clone()
+    };
+    self.cursor = 0;
+    rv
+  }
+}

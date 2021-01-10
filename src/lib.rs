@@ -11,7 +11,7 @@ pub fn sandbox() {
   println!("{:?}", recursive_tile_vector(61, &vec![Up], Some(4)));
 }
 
-pub fn game() {
+pub fn game_v3() {
   let mut game = v3::game::Game::new();
 
   println!("{}", game.render_board());

@@ -55,7 +55,7 @@ pub struct Fork {
 pub trait TheThinkyBitsV2 {
   /// Scan the board from the perspective of a piece's current position looking for
   /// all available moves as well as any pins and forks
-  fn scan_board(origin: usize, board: &Board, pieces: &Pieces, history: Option<&GameHistory>) -> ();
+  fn scan_board(origin: usize, board: &Board, pieces: &Pieces, history: Option<&GameHistory>) -> Result<Vec<usize>, String>;
   /// Given the results of a board scan, rank a piece's available moves based on
   /// 1. Captures: which moves result in immediate captures
   /// 2. Pins: which moves result in pins. Prioritize pinning higher value pieces
