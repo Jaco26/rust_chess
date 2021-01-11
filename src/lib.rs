@@ -1,15 +1,47 @@
 mod v3;
+mod v4;
 
 use std::io;
 use std::io::Write;
 use std::process;
 
-pub fn sandbox() {
+
+pub fn sandbox_v4() {
+  use std::collections::HashMap;
+
+  use v4::game::Game;
+  use v4::scan::ScanCtx;
+  use v4::scan::Direction;
+  use v4::scan::TileVector;
+
+  let game = Game::new();
+
+  let origin = game.board.index_of("d2").unwrap();
+
+  let scan_ctx = ScanCtx::new(origin, &game.board, &game.pieces).unwrap();
+
+  let tile_vec = TileVector::new(&scan_ctx, &vec![Direction::Up], None);
+
+  tile_vec.iter().for_each(|x| {
+    println!("{:?}", x);
+  });
+
+}
+
+pub fn game_v4() {
+
+}
+
+
+
+
+pub fn sandbox_v3() {
   use v3::scanner::Direction::*;
   use v3::scanner::recursive_tile_vector;
 
   println!("{:?}", recursive_tile_vector(61, &vec![Up], Some(4)));
 }
+
 
 pub fn game_v3() {
   let mut game = v3::game::Game::new();
