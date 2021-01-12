@@ -7,29 +7,83 @@ use std::process;
 
 
 pub fn sandbox_v4() {
-  use std::collections::HashMap;
-
   use v4::game::Game;
-  use v4::scan::ScanCtx;
-  use v4::scan::Direction;
-  use v4::scan::TileVector;
+  use v4::piece::{
+    Color,
+    ChessPieceKind
+  };
+  use v4::scan::{
+    ScanCtx,
+    Direction,
+    TileVector
+  };
 
   let game = Game::new();
 
   let origin = game.board.index_of("d2").unwrap();
 
-  let scan_ctx = ScanCtx::new(origin, &game.board, &game.pieces).unwrap();
+  let scan_ctx = ScanCtx::new(origin, &game.board).unwrap();
 
   let tile_vec = TileVector::new(&scan_ctx, &vec![Direction::Up], None);
 
-  tile_vec.iter().for_each(|x| {
+  for x in tile_vec.iter() {
     println!("{:?}", x);
-  });
+  }
+
+  let tile_vec_pieces: Vec<(usize, Option<(Color, ChessPieceKind)>)> = tile_vec
+    .iter()
+    .filter(|x| match x {
+      (_, Some(_)) => true,
+      _ => false
+    })
+    .collect();
+  
+  println!("{:?}", tile_vec_pieces);
 
 }
 
 pub fn game_v4() {
+  let mut game = v4::game::Game::new();
 
+  println!("{}", game.render_board());
+
+  loop {
+    let args = user_input().expect("Couldn't read user input");
+
+    let mut args = args.split_whitespace();
+
+    match args.next() {
+      Some(command) => {
+        if command == "board" {
+          println!("{}", game.render_board());
+        }
+        else if command == "move" {
+          match args.next() {
+            Some(from) => match args.next() {
+              Some(to) => match game.move_piece(from, to) {
+                Ok(_) => println!("Moved from {} to {}\n{}", from, to, game.render_board()),
+                Err(msg) => eprintln!("{}", msg),
+              },
+              None => eprintln!("You must provide a tile to move to"),
+            },
+            None => eprintln!("You must provide a tile to move from"),
+          }
+        }
+        else if command == "undo" {
+          match game.undo_move() {
+            Ok(()) => println!("Success!\n{}", game.render_board()),
+            Err(msg) => eprintln!("{}", msg),
+          };
+        }
+        else if command == "history" {
+          println!("{}", game.history(None));
+        }
+      }
+      None => {
+        println!("Plese provide a command")
+      }
+    }
+  }
 }
 
 

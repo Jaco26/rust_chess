@@ -5,6 +5,6 @@ use super::Direction;
 pub type Directions = Vec<Direction>;
 
 pub trait Scan {
-  fn tile_vectors<'a>(ctx: &ScanCtx) -> Vec<TileVector<'a>>;
+  fn scan<'a>(ctx: &ScanCtx) -> Vec<TileVector<'a>>;
 }
 

@@ -1,4 +1,7 @@
 use std::fmt;
+use std::collections::HashMap;
+
+pub type Pieces = HashMap<usize, ChessPiece>;
 
 #[derive(Debug, Clone)]
 pub enum Color { Black, White }

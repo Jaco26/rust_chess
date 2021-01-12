@@ -1,8 +1,8 @@
 pub mod prelude;
 
-use crate::v4::prelude::Pieces;
 use crate::v4::piece::{
   Color,
+  Pieces,
   ChessPieceKind,
 };
 use crate::v4::board::Board;
@@ -16,16 +16,14 @@ pub struct ScanCtx<'a> {
   pub origin: usize,
   pub origin_color: &'a Color,
   pub board: &'a Board,
-  pub pieces: &'a Pieces,
 }
 
 impl<'a> ScanCtx<'a> {
-  pub fn new(origin: usize, board: &'a Board, pieces: &'a Pieces) -> Result<ScanCtx<'a>, String> {
-    match pieces.get(&origin) {
+  pub fn new(origin: usize, board: &'a Board) -> Result<ScanCtx<'a>, String> {
+    match board.pieces.get(&origin) {
       Some(piece) => Ok(
         ScanCtx {
           board,
-          pieces,
           origin,
           origin_color: piece.color(),
         }
@@ -69,7 +67,7 @@ impl<'a> Iterator for TileVectorIterator<'a>{
     let cursor = self.cursor;
     self.cursor += 1;
     match self.tiles.get(cursor) {
-      Some(tile) => match self.ctx.pieces.get(tile) {
+      Some(tile) => match self.ctx.board.pieces.get(tile) {
         Some(piece) => {
           let color = piece.color().clone();
           let kind = piece.kind().clone();
