@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 pub type Pieces = HashMap<usize, ChessPiece>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Color { Black, White }
 
 

@@ -1,12 +1,22 @@
 use crate::v4::board::Board;
+use crate::v4::scan::{
+  Scan,
+  ScanCtx,
+  ScanReport,
+};
 use crate::v4::piece::{
   Color::*,
   ChessPiece,
+  ChessPieceKind,
 };
 use crate::v4::history::{
   GameMove,
   GameHistory,
 };
+use crate::v4::brain::{
+  BishopBrain,
+};
+
 
 #[derive(Debug)]
 pub struct Game {
@@ -60,6 +70,45 @@ impl Game {
     game
   }
 
+  pub fn do_scan(&self, pos: &str) -> Result<ScanReport, String> {
+    match self.board.index_of(pos) {
+      Some(idx) => match self.board.pieces.get(&idx) {
+        Some(piece) => {
+          let scan_ctx = ScanCtx::new(idx, &self.board)?;
+          Ok(
+            match piece.kind() {
+              ChessPieceKind::Pawn => BishopBrain::scan(&scan_ctx)?,
+              ChessPieceKind::Knight => BishopBrain::scan(&scan_ctx)?,
+              ChessPieceKind::Bishop => BishopBrain::scan(&scan_ctx)?,
+              ChessPieceKind::Rook => BishopBrain::scan(&scan_ctx)?,
+              ChessPieceKind::Queen => BishopBrain::scan(&scan_ctx)?,
+              ChessPieceKind::King => BishopBrain::scan(&scan_ctx)?,
+            }
+          )
+        }
+        None => Err(format!("No piece on tile '{}'", pos))
+      }
+      None => Err(format!("Tile '{}' does not exist", pos))
+    }
+  }
+
+  pub fn available_moves(&self, pos: &str) -> Result<String, String> {
+    let scan_result = self.do_scan(pos)?; 
+
+    if scan_result.available_tiles.len() == 0 {
+      return Err(format!("No moves available for piece at {}", pos))
+    }
+
+    Ok(
+      scan_result.available_tiles
+        .iter()
+        .fold(String::new(), |mut acc, idx| {
+          acc.push_str(&format!("{}, ", self.board.tile_name_at(*idx).unwrap()));
+          acc
+        })
+    )
+  }
+
   pub fn render_board(&self) -> String {
     let mut rv = String::new();
     let horizontal_divider = || {
@@ -86,15 +135,23 @@ impl Game {
   }
 
   pub fn move_piece(&mut self, from: &str, to: &str) -> Result<(), String> {
+    let scan_report = self.do_scan(from)?;
     match self.board.index_of(from) {
       Some(from_idx) => match self.board.index_of(to) {
         Some(to_idx) => match self.board.pieces.get_mut(&from_idx) {
           Some(piece) => {
             let is_valid_move = {
-              true
+              match piece.kind() {
+                ChessPieceKind::Bishop => {
+                  scan_report.available_tiles.contains(&to_idx)
+                }
+                _ => true
+              }
             };
-            if is_valid_move {
+            if is_valid_move  {
               piece.update_position(to);
+            } else {
+              return Err(format!("Cannot move {:?} from '{}' to '{}'", piece.kind(), from, to))
             }
           }
           None => return Err(format!("There is no piece on {}", from))

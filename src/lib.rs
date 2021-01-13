@@ -69,6 +69,17 @@ pub fn game_v4() {
             None => eprintln!("You must provide a tile to move from"),
           }
         }
+        else if command == "moves" {
+          match args.next() {
+            Some(from) => {
+              match game.available_moves(from) {
+                Ok(available_moves) => println!("{}", available_moves),
+                Err(msg) => eprintln!("{}", msg),
+              }
+            }
+            None => eprintln!("You must provide a tile")
+          }
+        }
         else if command == "undo" {
           match game.undo_move() {
             Ok(()) => println!("Success!\n{}", game.render_board()),
