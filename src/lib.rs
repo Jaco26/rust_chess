@@ -26,19 +26,19 @@ pub fn sandbox_v4() {
 
   let tile_vec = TileVector::new(&scan_ctx, &vec![Direction::Up], None);
 
-  for x in tile_vec.iter() {
-    println!("{:?}", x);
-  }
+  // for x in tile_vec.iter() {
+  //   println!("{:?}", x);
+  // }
 
-  let tile_vec_pieces: Vec<(usize, Option<(Color, ChessPieceKind)>)> = tile_vec
-    .iter()
-    .filter(|x| match x {
-      (_, Some(_)) => true,
-      _ => false
-    })
-    .collect();
+  // let tile_vec_pieces: Vec<(usize, Option<(Color, ChessPieceKind)>)> = tile_vec
+  //   .iter()
+  //   .filter(|x| match x {
+  //     (_, Some(_)) => true,
+  //     _ => false
+  //   })
+  //   .collect();
   
-  println!("{:?}", tile_vec_pieces);
+  // println!("{:?}", tile_vec_pieces);
 
 }
 

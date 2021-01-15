@@ -1,6 +1,8 @@
 mod ctx;
 mod tile_vector;
 
+use crate::v4::piece::ChessPieceKind;
+
 pub use ctx::ScanCtx;
 pub use tile_vector::TileVector;
 
@@ -14,21 +16,33 @@ pub type Directions = Vec<Direction>;
 pub struct Pin;
 pub struct Fork;
 
+#[derive(Debug, Clone)]
+pub struct Capturable<'b> {
+  tile: usize,
+  kind: &'b ChessPieceKind
+}
 
-pub struct ScanReport {
+impl<'b> Capturable<'b> {
+  pub fn new(tile: usize, kind: &'b ChessPieceKind) -> Capturable<'b> {
+    Capturable { tile, kind }
+  }
+}
+
+
+pub struct ScanReport<'a> {
   pub origin: usize,
   pub available_tiles: Vec<usize>,
-  pub capturable_tiles: Vec<usize>,
-  pub pins: Vec<Pin>,
+  pub capturables: Vec<Capturable<'a>>,
+  pub pins: Vec<Capturable<'a>>,
   pub forks: Vec<Fork>
 }
 
-impl ScanReport {
-  pub fn new(origin: usize) -> ScanReport {
+impl<'a> ScanReport<'a> {
+  pub fn new(origin: usize) -> ScanReport<'a> {
     ScanReport {
       origin,
       available_tiles: vec![],
-      capturable_tiles: vec![],
+      capturables: vec![],
       pins: vec![],
       forks: vec![],
     }
@@ -36,7 +50,7 @@ impl ScanReport {
 }
 
 
-pub trait Scan {
-  fn scan(ctx: &ScanCtx) -> Result<ScanReport, String>;
+pub trait Scan<'a> {
+  fn scan(ctx: &ScanCtx) -> Result<ScanReport<'a>, String>;
 }
 

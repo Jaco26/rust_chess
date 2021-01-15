@@ -1,61 +1,61 @@
-use crate::v4::piece::{
-  Color,
-  ChessPieceKind,
-};
+use crate::v4::piece::ChessPieceKind;
 
 use super::Direction;
 use super::Directions;
+use super::Capturable;
 use super::ctx::ScanCtx;
 
 
 #[derive(Debug, Clone)]
-pub struct TileVector<'a> {
+pub struct TileVector<'a, 'b> {
   ctx: &'a ScanCtx<'a>,
-  tiles: Vec<usize>
+  pub available_tiles: Vec<usize>,
+  pub capturable: Option<Capturable<'b>>,
+  pub pin: Option<Capturable<'b>>,
 }
 
 
-impl<'a> TileVector<'a> {
-  pub fn new(ctx: &'a ScanCtx, directions: &Directions, count: Option<usize>) -> TileVector<'a> {
-    TileVector {
-      ctx,
-      tiles: util::get_tile_vector_tiles(ctx.origin, directions, count)
-    }
-  }
-  pub fn iter(&self) -> TileVectorIterator<'a> {
-    TileVectorIterator { ctx: self.ctx, tiles: self.tiles.clone(), cursor: 0 }
-  }
-}
+impl<'a, 'b> TileVector<'a, 'b> {
+  pub fn new(ctx: &'a ScanCtx, directions: &Directions, count: Option<usize>) -> TileVector<'a, 'b> {
+    let mut rv = TileVector { ctx, available_tiles: vec![], capturable: None, pin: None };
 
-
-#[derive(Debug, Clone)]
-pub struct TileVectorIterator<'a> {
-  ctx: &'a ScanCtx<'a>,
-  cursor: usize,
-  tiles: Vec<usize>
-}
-
-impl<'a> Iterator for TileVectorIterator<'a>{
-  type Item = (usize, Option<(Color, ChessPieceKind)>);
-
-  fn next(&mut self) -> Option<Self::Item> {
-    let cursor = self.cursor;
-    self.cursor += 1;
-    match self.tiles.get(cursor) {
-      Some(tile) => match self.ctx.board.pieces.get(tile) {
+    for tile_idx in util::get_tile_vector_tiles(ctx.origin, directions, count) {
+      match ctx.board.pieces.get(&tile_idx) {
         Some(piece) => {
-          let color = piece.color().clone();
-          let kind = piece.kind().clone();
-          Some((*tile, Some((color, kind))))
+          if piece.color() == ctx.origin_color {
+            break
+          } else {
+            match rv.capturable {
+              Some(_) => match rv.pin {
+                Some(_) => {
+                  break
+                }
+                None => {
+                  rv.pin = Some(Capturable::new(tile_idx, piece.kind()))
+                }
+              }
+              None => {
+                rv.available_tiles.push(tile_idx);
+                rv.capturable = Some(Capturable::new(tile_idx, piece.kind()));
+              }
+            }
+          }
         }
         None => {
-          Some((*tile, None))
+          match rv.capturable {
+            Some(_) => { }
+            None => {
+              rv.available_tiles.push(tile_idx);
+            }
+          }
         }
       }
-      None => None
     }
+
+    rv
   }
 }
+
 
 mod util {
   use super::{Direction, Directions};

@@ -74,7 +74,8 @@ impl Game {
     match self.board.index_of(pos) {
       Some(idx) => match self.board.pieces.get(&idx) {
         Some(piece) => {
-          let scan_ctx = ScanCtx::new(idx, &self.board)?;
+          let board = self.board.clone();
+          let scan_ctx = ScanCtx::new(idx, &board)?;
           Ok(
             match piece.kind() {
               ChessPieceKind::Pawn => BishopBrain::scan(&scan_ctx)?,
@@ -135,37 +136,37 @@ impl Game {
   }
 
   pub fn move_piece(&mut self, from: &str, to: &str) -> Result<(), String> {
-    let scan_report = self.do_scan(from)?;
-    match self.board.index_of(from) {
+    let (from_idx, to_idx) = match self.board.index_of(from) {
       Some(from_idx) => match self.board.index_of(to) {
-        Some(to_idx) => match self.board.pieces.get_mut(&from_idx) {
-          Some(piece) => {
-            let is_valid_move = {
-              match piece.kind() {
-                ChessPieceKind::Bishop => {
-                  scan_report.available_tiles.contains(&to_idx)
-                }
-                _ => true
-              }
-            };
-            if is_valid_move  {
-              piece.update_position(to);
-            } else {
-              return Err(format!("Cannot move {:?} from '{}' to '{}'", piece.kind(), from, to))
-            }
-          }
-          None => return Err(format!("There is no piece on {}", from))
+        Some(to_idx) => match self.board.pieces.contains_key(&from_idx) {
+          true => (from_idx, to_idx),
+          false => return Err(format!("There is no piece on {}", from))
         }
         None => return Err("Cannot move to tile that does not exist".to_owned())
       }
       None => return Err("Cannot move from tile that does not exist".to_owned())
+    };
+
+    let scan_report = self.do_scan(from)?;
+
+    let piece = self.board.pieces.get(&from_idx).unwrap();
+
+    let is_valid_move = match piece.kind() {
+      ChessPieceKind::Bishop => {
+        scan_report.available_tiles.contains(&to_idx)
+      }
+      _ => true
+    };
+
+    if is_valid_move {
+      let mut piece = self.board.pieces.remove(&from_idx).unwrap();
+      piece.update_position(to);
+      self.history.push(
+        from_idx, to_idx, self.board.add_piece(piece).unwrap()
+      );
+      return Ok(())
     }
-    let from_idx = self.board.index_of(from).unwrap();
-    let to_idx = self.board.index_of(to).unwrap();
-    let moved_piece = self.board.pieces.remove(&from_idx).unwrap();
-    let maybe_capture = self.board.add_piece(moved_piece).unwrap();
-    self.history.push(from_idx, to_idx, maybe_capture);
-    Ok(())
+    Err(format!("Cannot move {:?} from '{}' to '{}'", piece.kind(), from, to))
   }
 
   pub fn undo_move(&mut self) -> Result<(), String> {

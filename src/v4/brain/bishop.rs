@@ -10,8 +10,8 @@ use crate::v4::scan::{
 
 pub struct BishopBrain;
 
-impl Scan for BishopBrain {
-  fn scan(ctx: &ScanCtx) -> Result<ScanReport, String> {
+impl<'a> Scan<'a> for BishopBrain {
+  fn scan(ctx: &ScanCtx) -> Result<ScanReport<'a>, String> {
     let tile_vectors = vec![
       TileVector::new(ctx, &vec![Up, Left], None),
       TileVector::new(ctx, &vec![Up, Right], None),
@@ -19,25 +19,16 @@ impl Scan for BishopBrain {
       TileVector::new(ctx, &vec![Down, Right], None),
     ];
 
-    let mut report = ScanReport::new(ctx.origin);
+    let mut rv: ScanReport<'a> = ScanReport::new(ctx.origin);
 
-    report.available_tiles = tile_vectors
-      .iter()
-      .fold(Vec::new(), |mut acc, tv| {
-        for (tile_idx, piece_opt) in tv.iter() {
-          if let Some((color, _kind)) = piece_opt {
-            if color == *ctx.origin_color {
-              break
-            }
-            acc.push(tile_idx);
-            break
-          }
-          acc.push(tile_idx);
-        }
-        acc
-      });
-    
+    for mut v in tile_vectors {
+      rv.available_tiles.append(&mut v.available_tiles);
+      if v.capturable.is_some() {
+        rv.pins.push(v.capturable.unwrap());
+      }
+      
+    }
 
-    Ok(report)
+    Ok(rv)
   }
 }
