@@ -1,5 +1,3 @@
-use crate::v4::piece::ChessPieceKind;
-
 use super::Direction;
 use super::Directions;
 use super::Capturable;
@@ -7,17 +5,17 @@ use super::ctx::ScanCtx;
 
 
 #[derive(Debug, Clone)]
-pub struct TileVector<'a, 'b> {
+pub struct TileVector<'a> {
   ctx: &'a ScanCtx<'a>,
   pub available_tiles: Vec<usize>,
-  pub capturable: Option<Capturable<'b>>,
-  pub pin: Option<Capturable<'b>>,
+  pub capturable: Option<Capturable>,
+  pub pinned: Option<Capturable>,
 }
 
 
-impl<'a, 'b> TileVector<'a, 'b> {
-  pub fn new(ctx: &'a ScanCtx, directions: &Directions, count: Option<usize>) -> TileVector<'a, 'b> {
-    let mut rv = TileVector { ctx, available_tiles: vec![], capturable: None, pin: None };
+impl<'a> TileVector<'a> {
+  pub fn new(ctx: &'a ScanCtx, directions: &Directions, count: Option<usize>) -> TileVector<'a> {
+    let mut rv = TileVector { ctx, available_tiles: vec![], capturable: None, pinned: None };
 
     for tile_idx in util::get_tile_vector_tiles(ctx.origin, directions, count) {
       match ctx.board.pieces.get(&tile_idx) {
@@ -26,17 +24,17 @@ impl<'a, 'b> TileVector<'a, 'b> {
             break
           } else {
             match rv.capturable {
-              Some(_) => match rv.pin {
+              Some(_) => match rv.pinned {
                 Some(_) => {
                   break
                 }
                 None => {
-                  rv.pin = Some(Capturable::new(tile_idx, piece.kind()))
+                  rv.pinned = Some(Capturable::new(tile_idx, piece.kind().clone()))
                 }
               }
               None => {
                 rv.available_tiles.push(tile_idx);
-                rv.capturable = Some(Capturable::new(tile_idx, piece.kind()));
+                rv.capturable = Some(Capturable::new(tile_idx, piece.kind().clone()));
               }
             }
           }

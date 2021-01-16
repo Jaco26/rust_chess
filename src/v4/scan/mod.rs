@@ -17,40 +17,52 @@ pub struct Pin;
 pub struct Fork;
 
 #[derive(Debug, Clone)]
-pub struct Capturable<'b> {
-  tile: usize,
-  kind: &'b ChessPieceKind
+pub struct Capturable {
+  pub tile: usize,
+  pub kind: ChessPieceKind
 }
 
-impl<'b> Capturable<'b> {
-  pub fn new(tile: usize, kind: &'b ChessPieceKind) -> Capturable<'b> {
+impl Capturable {
+  pub fn new(tile: usize, kind: ChessPieceKind) -> Capturable {
     Capturable { tile, kind }
   }
 }
 
 
-pub struct ScanReport<'a> {
+pub struct ScanReport {
   pub origin: usize,
   pub available_tiles: Vec<usize>,
-  pub capturables: Vec<Capturable<'a>>,
-  pub pins: Vec<Capturable<'a>>,
+  pub capturables: Vec<Capturable>,
+  pub pinned: Vec<Capturable>,
   pub forks: Vec<Fork>
 }
 
-impl<'a> ScanReport<'a> {
-  pub fn new(origin: usize) -> ScanReport<'a> {
-    ScanReport {
+impl ScanReport {
+  pub fn new(origin: usize, tile_vectors: Vec<TileVector>) -> ScanReport {
+    let mut rv = ScanReport {
       origin,
       available_tiles: vec![],
       capturables: vec![],
-      pins: vec![],
+      pinned: vec![],
       forks: vec![],
+    };
+
+    for mut v in tile_vectors {
+      rv.available_tiles.append(&mut v.available_tiles);
+      if v.capturable.is_some() {
+        rv.capturables.push(v.capturable.unwrap());
+      }
+      if v.pinned.is_some() {
+        rv.pinned.push(v.pinned.unwrap());
+      }
     }
+
+    rv
   } 
 }
 
 
 pub trait Scan<'a> {
-  fn scan(ctx: &ScanCtx) -> Result<ScanReport<'a>, String>;
+  fn scan(ctx: &ScanCtx) -> Result<ScanReport, String>;
 }
 

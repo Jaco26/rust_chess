@@ -14,7 +14,12 @@ use crate::v4::history::{
   GameHistory,
 };
 use crate::v4::brain::{
+  PawnBrain,
+  KnightBrain,
   BishopBrain,
+  RookBrain,
+  QueenBrain,
+  KingBrain,
 };
 
 
@@ -41,14 +46,14 @@ impl Game {
     game.board.add_piece(ChessPiece::bishop(White, "f1")).unwrap();
     game.board.add_piece(ChessPiece::knight(White, "g1")).unwrap();
     game.board.add_piece(ChessPiece::rook(White, "h1")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(White, "a2")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(White, "b2")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(White, "c2")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(White, "d2")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(White, "e2")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(White, "f2")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(White, "g2")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(White, "h2")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(White, "a2")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(White, "b2")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(White, "c2")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(White, "d2")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(White, "e2")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(White, "f2")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(White, "g2")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(White, "h2")).unwrap();
 
     game.board.add_piece(ChessPiece::rook(Black, "a8")).unwrap();
     game.board.add_piece(ChessPiece::knight(Black, "b8")).unwrap();
@@ -58,14 +63,14 @@ impl Game {
     game.board.add_piece(ChessPiece::bishop(Black, "f8")).unwrap();
     game.board.add_piece(ChessPiece::knight(Black, "g8")).unwrap();
     game.board.add_piece(ChessPiece::rook(Black, "h8")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(Black, "a7")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(Black, "b7")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(Black, "c7")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(Black, "d7")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(Black, "e7")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(Black, "f7")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(Black, "g7")).unwrap();
-    game.board.add_piece(ChessPiece::pawn(Black, "h7")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(Black, "a7")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(Black, "b7")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(Black, "c7")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(Black, "d7")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(Black, "e7")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(Black, "f7")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(Black, "g7")).unwrap();
+    // game.board.add_piece(ChessPiece::pawn(Black, "h7")).unwrap();
 
     game
   }
@@ -74,16 +79,15 @@ impl Game {
     match self.board.index_of(pos) {
       Some(idx) => match self.board.pieces.get(&idx) {
         Some(piece) => {
-          let board = self.board.clone();
-          let scan_ctx = ScanCtx::new(idx, &board)?;
+          let scan_ctx = ScanCtx::new(idx, &self.board, &self.history)?;
           Ok(
             match piece.kind() {
-              ChessPieceKind::Pawn => BishopBrain::scan(&scan_ctx)?,
-              ChessPieceKind::Knight => BishopBrain::scan(&scan_ctx)?,
+              ChessPieceKind::Pawn => PawnBrain::scan(&scan_ctx)?,
+              ChessPieceKind::Knight => KnightBrain::scan(&scan_ctx)?,
               ChessPieceKind::Bishop => BishopBrain::scan(&scan_ctx)?,
-              ChessPieceKind::Rook => BishopBrain::scan(&scan_ctx)?,
-              ChessPieceKind::Queen => BishopBrain::scan(&scan_ctx)?,
-              ChessPieceKind::King => BishopBrain::scan(&scan_ctx)?,
+              ChessPieceKind::Rook => RookBrain::scan(&scan_ctx)?,
+              ChessPieceKind::Queen => QueenBrain::scan(&scan_ctx)?,
+              ChessPieceKind::King => KingBrain::scan(&scan_ctx)?,
             }
           )
         }
@@ -100,14 +104,52 @@ impl Game {
       return Err(format!("No moves available for piece at {}", pos))
     }
 
-    Ok(
-      scan_result.available_tiles
-        .iter()
-        .fold(String::new(), |mut acc, idx| {
-          acc.push_str(&format!("{}, ", self.board.tile_name_at(*idx).unwrap()));
-          acc
-        })
-    )
+    let available_moves: Vec<String> = scan_result.available_tiles
+      .iter()
+      .map(|idx| self.board.tile_name_at(*idx).unwrap().to_owned())
+      .collect();
+
+    let capturables: Vec<String> = scan_result.capturables
+      .iter()
+      .map(|capturable| {
+        format!(
+          "{:?} at {}",
+          capturable.kind,
+          self.board.tile_name_at(capturable.tile).unwrap(),
+        )
+      })
+      .collect();
+
+    let pinned: Vec<String> = scan_result.pinned
+      .iter()
+      .map(|capturable| {
+        format!(
+          "{:?} at {}",
+          capturable.kind,
+          self.board.tile_name_at(capturable.tile).unwrap(),
+        )
+      })
+      .collect();
+
+    let piece = self.board.pieces.get(&scan_result.origin).unwrap();
+
+    let pad_rule = || match piece.kind() {
+      ChessPieceKind::Pawn |
+      ChessPieceKind::Rook |
+      ChessPieceKind::King => "----",
+      ChessPieceKind::Queen => "-----",
+      ChessPieceKind::Bishop |
+      ChessPieceKind::Knight => "------",
+    };
+  
+    let mut rv = format!(
+      "\nFor {:?} at {}\n----------{}\n", piece.kind(), pos, pad_rule()
+    );
+    rv.push_str(&format!("Moves      : {:?}\n", available_moves));
+    rv.push_str(&format!("Capturable : {:?}\n", capturables));
+    rv.push_str(&format!("Pinned     : {:?}\n", pinned));
+
+    Ok(rv)
   }
 
   pub fn render_board(&self) -> String {
@@ -151,11 +193,8 @@ impl Game {
 
     let piece = self.board.pieces.get(&from_idx).unwrap();
 
-    let is_valid_move = match piece.kind() {
-      ChessPieceKind::Bishop => {
-        scan_report.available_tiles.contains(&to_idx)
-      }
-      _ => true
+    let is_valid_move = {
+      scan_report.available_tiles.contains(&to_idx)
     };
 
     if is_valid_move {

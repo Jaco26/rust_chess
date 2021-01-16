@@ -22,23 +22,9 @@ pub fn sandbox_v4() {
 
   let origin = game.board.index_of("d2").unwrap();
 
-  let scan_ctx = ScanCtx::new(origin, &game.board).unwrap();
+  let scan_ctx = ScanCtx::new(origin, &game.board, &game.history).unwrap();
 
   let tile_vec = TileVector::new(&scan_ctx, &vec![Direction::Up], None);
-
-  // for x in tile_vec.iter() {
-  //   println!("{:?}", x);
-  // }
-
-  // let tile_vec_pieces: Vec<(usize, Option<(Color, ChessPieceKind)>)> = tile_vec
-  //   .iter()
-  //   .filter(|x| match x {
-  //     (_, Some(_)) => true,
-  //     _ => false
-  //   })
-  //   .collect();
-  
-  // println!("{:?}", tile_vec_pieces);
 
 }
 
