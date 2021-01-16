@@ -30,6 +30,8 @@ impl<'a> Scan<'a> for PawnBrain {
 
     let mut rv = ScanReport::new(
       ctx.origin, 
+      ctx.origin_kind.clone(),
+      ctx.origin_color.clone(), 
       vec![
         TileVector::new(ctx, &vec![forward()], Some(forward_count)),
         TileVector::new(ctx, &vec![forward(), Left], Some(1)),

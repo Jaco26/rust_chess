@@ -1,5 +1,8 @@
+#![allow(dead_code, unused_imports, unused_variables, unused_mut)]
+
 mod v3;
 mod v4;
+mod concurrent_scan;
 
 use std::io;
 use std::io::Write;
@@ -9,6 +12,7 @@ use std::process;
 pub fn sandbox_v4() {
   use v4::game::Game;
   use v4::piece::{
+    ChessPiece,
     Color,
     ChessPieceKind
   };
@@ -18,18 +22,62 @@ pub fn sandbox_v4() {
     TileVector
   };
 
-  let game = Game::new();
+  let mut game = Game::new();
 
-  let origin = game.board.index_of("d2").unwrap();
+  concurrent_scan::do_concurrent_scan().unwrap_or_else(|err| {
+    eprintln!("[ConcurrentScanError]: {}", err);
+  });
 
-  let scan_ctx = ScanCtx::new(origin, &game.board, &game.history).unwrap();
-
-  let tile_vec = TileVector::new(&scan_ctx, &vec![Direction::Up], None);
 
 }
 
 pub fn game_v4() {
-  let mut game = v4::game::Game::new();
+  use v4::game::Game;
+  use v4::piece::{
+    ChessPiece,
+    Color::{
+      White, Black
+    },
+    ChessPieceKind
+  };
+
+  let mut game = Game::new();
+
+  game.setup(vec![
+    ChessPiece::rook(White, "a1"),
+    ChessPiece::knight(White, "b1"),
+    ChessPiece::bishop(White, "c1"),
+    ChessPiece::queen(White, "d1"),
+    ChessPiece::king(White, "e1"),
+    ChessPiece::bishop(White, "f1"),
+    ChessPiece::knight(White, "g1"),
+    ChessPiece::rook(White, "h1"),
+    ChessPiece::pawn(White, "a2"),
+    ChessPiece::pawn(White, "b2"),
+    ChessPiece::pawn(White, "c2"),
+    ChessPiece::pawn(White, "d2"),
+    ChessPiece::pawn(White, "e2"),
+    ChessPiece::pawn(White, "f2"),
+    ChessPiece::pawn(White, "g2"),
+    ChessPiece::pawn(White, "h2"),
+    
+    ChessPiece::rook(Black, "a8"),
+    ChessPiece::knight(Black, "b8"),
+    ChessPiece::bishop(Black, "c8"),
+    ChessPiece::queen(Black, "d8"),
+    ChessPiece::king(Black, "e8"),
+    ChessPiece::bishop(Black, "f8"),
+    ChessPiece::knight(Black, "g8"),
+    ChessPiece::rook(Black, "h8"),
+    ChessPiece::pawn(Black, "a7"),
+    ChessPiece::pawn(Black, "b7"),
+    ChessPiece::pawn(Black, "c7"),
+    ChessPiece::pawn(Black, "d7"),
+    ChessPiece::pawn(Black, "e7"),
+    ChessPiece::pawn(Black, "f7"),
+    ChessPiece::pawn(Black, "g7"),
+    ChessPiece::pawn(Black, "h7"),
+  ]);
 
   println!("{}", game.render_board());
 
