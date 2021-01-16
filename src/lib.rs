@@ -27,8 +27,7 @@ pub fn sandbox_v4() {
   concurrent_scan::do_concurrent_scan().unwrap_or_else(|err| {
     eprintln!("[ConcurrentScanError]: {}", err);
   });
-
-
+  
 }
 
 pub fn game_v4() {

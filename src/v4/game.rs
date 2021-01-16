@@ -85,18 +85,20 @@ impl Game {
         format!(
           "{:?} at {}",
           capturable.kind,
-          self.board.tile_name_at(capturable.tile).unwrap(),
+          self.board.tile_name_at(capturable.origin).unwrap(),
         )
       })
       .collect();
 
-    let pinned: Vec<String> = scan_result.pinned
+    let pins: Vec<String> = scan_result.pins
       .iter()
-      .map(|capturable| {
+      .map(|pin| {
         format!(
-          "{:?} at {}",
-          capturable.kind,
-          self.board.tile_name_at(capturable.tile).unwrap(),
+          "{:?} at {} is shielded by {:?} at {}",
+          pin.shielded.kind,
+          self.board.tile_name_at(pin.shielded.origin).unwrap(),
+          pin.pinned.kind,
+          self.board.tile_name_at(pin.pinned.origin).unwrap()
         )
       })
       .collect();
@@ -117,7 +119,7 @@ impl Game {
     );
     rv.push_str(&format!("Moves      : {:?}\n", available_moves));
     rv.push_str(&format!("Capturable : {:?}\n", capturables));
-    rv.push_str(&format!("Pinned     : {:?}\n", pinned));
+    rv.push_str(&format!("Pins       : {:#?}\n", pins));
 
     Ok(rv)
   }

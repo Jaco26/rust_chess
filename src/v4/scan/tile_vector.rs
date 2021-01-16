@@ -3,6 +3,7 @@ use crate::v4::piece::ChessPieceKind;
 use super::Direction;
 use super::Directions;
 use super::Capturable;
+use super::Pin;
 use super::ctx::ScanCtx;
 
 
@@ -11,13 +12,13 @@ pub struct TileVector<'a> {
   ctx: &'a ScanCtx<'a>,
   pub available_tiles: Vec<usize>,
   pub capturable: Option<Capturable>,
-  pub pinned: Option<Capturable>,
+  pub pin: Option<Pin>,
 }
 
 
 impl<'a> TileVector<'a> {
   pub fn new(ctx: &'a ScanCtx, directions: &Directions, count: Option<usize>) -> TileVector<'a> {
-    let mut rv = TileVector { ctx, available_tiles: vec![], capturable: None, pinned: None };
+    let mut rv = TileVector { ctx, available_tiles: vec![], capturable: None, pin: None };
 
     let is_pawn = ctx.origin_kind == &ChessPieceKind::Pawn;
     let is_pawn_attack = {
@@ -31,12 +32,18 @@ impl<'a> TileVector<'a> {
             break
           } else {
             match rv.capturable {
-              Some(_) => match rv.pinned {
+              Some(ref capturable) => match rv.pin {
                 Some(_) => {
                   break
                 }
                 None => {
-                  rv.pinned = Some(Capturable::new(tile_idx, piece.kind().clone()))
+                  rv.pin = Some(
+                    Pin::new(
+                      ctx, 
+                      capturable.clone(),
+                      Capturable::new(tile_idx, piece.kind().clone())
+                    )
+                  )
                 }
               }
               None if is_pawn_attack => {
