@@ -7,7 +7,7 @@ pub type Pieces = HashMap<usize, ChessPiece>;
 pub enum Color { Black, White }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ChessPieceKind {
   Pawn, Knight, Bishop,
   Rook, Queen, King

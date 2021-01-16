@@ -1,3 +1,5 @@
+use crate::v4::piece::ChessPieceKind;
+
 use super::Direction;
 use super::Directions;
 use super::Capturable;
@@ -17,6 +19,11 @@ impl<'a> TileVector<'a> {
   pub fn new(ctx: &'a ScanCtx, directions: &Directions, count: Option<usize>) -> TileVector<'a> {
     let mut rv = TileVector { ctx, available_tiles: vec![], capturable: None, pinned: None };
 
+    let is_pawn = ctx.origin_kind == &ChessPieceKind::Pawn;
+    let is_pawn_attack = {
+      is_pawn && (directions.contains(&Direction::Left) || directions.contains(&Direction::Right))
+    };
+
     for tile_idx in util::get_tile_vector_tiles(ctx.origin, directions, count) {
       match ctx.board.pieces.get(&tile_idx) {
         Some(piece) => {
@@ -32,6 +39,11 @@ impl<'a> TileVector<'a> {
                   rv.pinned = Some(Capturable::new(tile_idx, piece.kind().clone()))
                 }
               }
+              None if is_pawn_attack => {
+                rv.available_tiles.push(tile_idx);
+                rv.capturable = Some(Capturable::new(tile_idx, piece.kind().clone()));
+              }
+              None if is_pawn => { }
               None => {
                 rv.available_tiles.push(tile_idx);
                 rv.capturable = Some(Capturable::new(tile_idx, piece.kind().clone()));
@@ -42,6 +54,7 @@ impl<'a> TileVector<'a> {
         None => {
           match rv.capturable {
             Some(_) => { }
+            None if is_pawn_attack => { }
             None => {
               rv.available_tiles.push(tile_idx);
             }
@@ -49,6 +62,7 @@ impl<'a> TileVector<'a> {
         }
       }
     }
+
 
     rv
   }

@@ -46,10 +46,14 @@ pub fn game_v4() {
         else if command == "move" {
           match args.next() {
             Some(from) => match args.next() {
-              Some(to) => match game.move_piece(from, to) {
-                Ok(_) => println!("Moved from {} to {}\n{}", from, to, game.render_board()),
-                Err(msg) => eprintln!("{}", msg),
-              },
+              Some(to) => {
+                let next_arg = args.next().unwrap_or("");
+                let force_move = next_arg == "-f" || next_arg == "--force";
+                match game.move_piece(from, to, force_move) {
+                  Ok(_) => println!("Moved from {} to {}\n{}", from, to, game.render_board()),
+                  Err(msg) => eprintln!("{}", msg),
+                }
+              }
               None => eprintln!("You must provide a tile to move to"),
             },
             None => eprintln!("You must provide a tile to move from"),

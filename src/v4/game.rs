@@ -46,14 +46,14 @@ impl Game {
     game.board.add_piece(ChessPiece::bishop(White, "f1")).unwrap();
     game.board.add_piece(ChessPiece::knight(White, "g1")).unwrap();
     game.board.add_piece(ChessPiece::rook(White, "h1")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(White, "a2")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(White, "b2")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(White, "c2")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(White, "d2")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(White, "e2")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(White, "f2")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(White, "g2")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(White, "h2")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(White, "a2")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(White, "b2")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(White, "c2")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(White, "d2")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(White, "e2")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(White, "f2")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(White, "g2")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(White, "h2")).unwrap();
 
     game.board.add_piece(ChessPiece::rook(Black, "a8")).unwrap();
     game.board.add_piece(ChessPiece::knight(Black, "b8")).unwrap();
@@ -63,14 +63,14 @@ impl Game {
     game.board.add_piece(ChessPiece::bishop(Black, "f8")).unwrap();
     game.board.add_piece(ChessPiece::knight(Black, "g8")).unwrap();
     game.board.add_piece(ChessPiece::rook(Black, "h8")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(Black, "a7")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(Black, "b7")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(Black, "c7")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(Black, "d7")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(Black, "e7")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(Black, "f7")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(Black, "g7")).unwrap();
-    // game.board.add_piece(ChessPiece::pawn(Black, "h7")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(Black, "a7")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(Black, "b7")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(Black, "c7")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(Black, "d7")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(Black, "e7")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(Black, "f7")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(Black, "g7")).unwrap();
+    game.board.add_piece(ChessPiece::pawn(Black, "h7")).unwrap();
 
     game
   }
@@ -177,7 +177,7 @@ impl Game {
     rv
   }
 
-  pub fn move_piece(&mut self, from: &str, to: &str) -> Result<(), String> {
+  pub fn move_piece(&mut self, from: &str, to: &str, force: bool) -> Result<(), String> {
     let (from_idx, to_idx) = match self.board.index_of(from) {
       Some(from_idx) => match self.board.index_of(to) {
         Some(to_idx) => match self.board.pieces.contains_key(&from_idx) {
@@ -197,7 +197,7 @@ impl Game {
       scan_report.available_tiles.contains(&to_idx)
     };
 
-    if is_valid_move {
+    if is_valid_move || force {
       let mut piece = self.board.pieces.remove(&from_idx).unwrap();
       piece.update_position(to);
       self.history.push(

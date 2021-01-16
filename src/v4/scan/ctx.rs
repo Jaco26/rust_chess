@@ -1,10 +1,12 @@
 use crate::v4::piece::Color;
+use crate::v4::piece::ChessPieceKind;
 use crate::v4::board::Board;
 use crate::v4::history::GameHistory;
 
 #[derive(Debug, Clone)]
 pub struct ScanCtx<'a> {
   pub origin: usize,
+  pub origin_kind: &'a ChessPieceKind,
   pub origin_color: &'a Color,
   pub board: &'a Board,
   pub history: &'a GameHistory,
@@ -18,6 +20,7 @@ impl<'a> ScanCtx<'a> {
           board,
           history,
           origin,
+          origin_kind: piece.kind(),
           origin_color: piece.color(),
         }
       ),

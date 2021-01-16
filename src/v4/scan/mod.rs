@@ -6,7 +6,7 @@ use crate::v4::piece::ChessPieceKind;
 pub use ctx::ScanCtx;
 pub use tile_vector::TileVector;
 
-
+#[derive(PartialEq)]
 pub enum Direction { Up, Right, Down, Left }
 
 
