@@ -8,6 +8,7 @@ pub use pin::Pin;
 pub use ctx::ScanCtx;
 pub use report::ScanReport;
 pub use capturable::Capturable;
+pub use capturable::CapturableValue;
 pub use tile_vector::TileVector;
 
 

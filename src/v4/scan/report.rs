@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use crate::v4::piece::{
   Color,
   ChessPieceKind,
@@ -6,6 +7,10 @@ use super::{
   Pin,
   TileVector,
   Capturable,
+  CapturableValue::{
+    Check,
+    Points,
+  },
 };
 
 
@@ -51,5 +56,58 @@ impl ScanReport {
   pub fn is_fork(&self) -> bool {
     self.capturables.len() > 1
   }
+
+  /// A somewhat arbitrary quantification as means of determining relative value
+  /// of moving to a tile at self.origin
+  pub fn score(&self) -> usize {
+    let variety = self.available_tiles.len();
+    
+    let fork_factor = match self.is_fork() {
+      true => self.capturables.len() * 2,
+      false => 0
+    };
+
+    let capturables_points = self.capturables
+      .iter()
+      .fold(0, |mut acc, x| acc + match x.value() {
+        Points(n) => n,
+        Check => 50
+      });
+
+    let pin_points = self.pins
+      .iter()
+      .fold(0, |mut acc, pin| {
+        acc += match pin.pinned.value() {
+          Points(n) => n,
+          Check => 50,
+        };
+        acc += match pin.shielded.value() {
+          Points(n) => n,
+          Check => 50,
+        };
+        acc
+      });
+
+    variety + fork_factor + capturables_points + pin_points
+  }
 }
 
+impl Eq for ScanReport { }
+
+impl PartialEq for ScanReport {
+  fn eq(&self, other: &Self) -> bool {
+    self.score() == other.score()
+  }
+}
+
+impl PartialOrd for ScanReport {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
+  }
+}
+
+impl Ord for ScanReport {
+  fn cmp(&self, other: &Self) -> Ordering {
+    self.score().cmp(&other.score())
+  }
+}

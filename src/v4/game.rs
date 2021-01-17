@@ -38,7 +38,50 @@ impl Game {
       history: GameHistory::new()
     }
   }
+  pub fn default() -> Game {
+    let mut game = Game::new();
+    game.setup(vec![
+      ChessPiece::rook(White, "a1"),
+      ChessPiece::knight(White, "b1"),
+      ChessPiece::bishop(White, "c1"),
+      ChessPiece::queen(White, "d1"),
+      ChessPiece::king(White, "e1"),
+      ChessPiece::bishop(White, "f1"),
+      ChessPiece::knight(White, "g1"),
+      ChessPiece::rook(White, "h1"),
+      ChessPiece::pawn(White, "a2"),
+      ChessPiece::pawn(White, "b2"),
+      ChessPiece::pawn(White, "c2"),
+      ChessPiece::pawn(White, "d2"),
+      ChessPiece::pawn(White, "e2"),
+      ChessPiece::pawn(White, "f2"),
+      ChessPiece::pawn(White, "g2"),
+      ChessPiece::pawn(White, "h2"),
+      
+      ChessPiece::rook(Black, "a8"),
+      ChessPiece::knight(Black, "b8"),
+      ChessPiece::bishop(Black, "c8"),
+      ChessPiece::queen(Black, "d8"),
+      ChessPiece::king(Black, "e8"),
+      ChessPiece::bishop(Black, "f8"),
+      ChessPiece::knight(Black, "g8"),
+      ChessPiece::rook(Black, "h8"),
+      ChessPiece::pawn(Black, "a7"),
+      ChessPiece::pawn(Black, "b7"),
+      ChessPiece::pawn(Black, "c7"),
+      ChessPiece::pawn(Black, "d7"),
+      ChessPiece::pawn(Black, "e7"),
+      ChessPiece::pawn(Black, "f7"),
+      ChessPiece::pawn(Black, "g7"),
+      ChessPiece::pawn(Black, "h7"),
+    ]);
+    game
+  }
+}
 
+
+// Methods
+impl Game {
   pub fn setup(&mut self, pieces: Vec<ChessPiece>) {
     for p in pieces {
       self.board.add_piece(p).unwrap();
@@ -212,6 +255,4 @@ impl Game {
         acc
       })
   }
-
-
 }

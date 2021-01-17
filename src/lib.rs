@@ -13,8 +13,8 @@ pub fn sandbox_v4() {
   use v4::game::Game;
   use v4::piece::{
     ChessPiece,
-    Color,
-    ChessPieceKind
+    Color::*,
+    ChessPieceKind,
   };
   use v4::scan::{
     ScanCtx,
@@ -24,10 +24,66 @@ pub fn sandbox_v4() {
 
   let mut game = Game::new();
 
-  concurrent_scan::do_concurrent_scan().unwrap_or_else(|err| {
-    eprintln!("[ConcurrentScanError]: {}", err);
-  });
+  game.setup(vec![
+    ChessPiece::king(Black, "b8"),
+    ChessPiece::rook(Black, "f8"),
+    ChessPiece::pawn(Black, "a7"),
+    ChessPiece::pawn(Black, "b7"),
+    ChessPiece::pawn(Black, "g7"),
+    ChessPiece::pawn(Black, "h7"),
+    ChessPiece::pawn(Black, "c6"),
+    ChessPiece::knight(Black, "e4"),
+    ChessPiece::rook(Black, "e2"),
+
+    ChessPiece::rook(White, "c1"),
+    ChessPiece::rook(White, "f1"),
+    ChessPiece::pawn(White, "a2"),
+    ChessPiece::bishop(White, "f2"),
+    ChessPiece::king(White, "g2"),
+    ChessPiece::bishop(White, "b3"),
+    ChessPiece::pawn(White, "g3"),
+    ChessPiece::pawn(White, "h3"),
+    ChessPiece::pawn(White, "c4")
+  ]);
   
+  let mut results = vec![];
+
+  for (tile_idx, piece) in game.board.pieces.iter() {
+    match piece.color() {
+      White => {
+        results.push(
+          v4::priority::prioritize_possible_moves(
+            game.clone(),
+            *tile_idx
+          )
+        );
+      }
+      _ => {}
+    }
+  }
+
+  let results: String = results
+    .into_iter()
+    .map(|(base_scan, mut pq)| {
+      let from_pos = game.board.tile_name_at(base_scan.origin).unwrap();
+      let mut rv = format!("For {:?} at {}\n", base_scan.origin_kind, from_pos);
+      let mut count = 0;
+      while let Some(scan) = pq.pop() {
+        if count > 2 {
+          break
+        }
+        let to_pos = game.board.tile_name_at(scan.origin).unwrap();
+        rv.push_str(&format!("-> {}\n", to_pos));
+        count += 1;
+      }
+      rv
+    })
+    .collect::<Vec<String>>()
+    .join("\n");
+
+
+  println!("{}", results);
+
 }
 
 pub fn game_v4() {
@@ -40,43 +96,7 @@ pub fn game_v4() {
     ChessPieceKind
   };
 
-  let mut game = Game::new();
-
-  game.setup(vec![
-    ChessPiece::rook(White, "a1"),
-    ChessPiece::knight(White, "b1"),
-    ChessPiece::bishop(White, "c1"),
-    ChessPiece::queen(White, "d1"),
-    ChessPiece::king(White, "e1"),
-    ChessPiece::bishop(White, "f1"),
-    ChessPiece::knight(White, "g1"),
-    ChessPiece::rook(White, "h1"),
-    ChessPiece::pawn(White, "a2"),
-    ChessPiece::pawn(White, "b2"),
-    ChessPiece::pawn(White, "c2"),
-    ChessPiece::pawn(White, "d2"),
-    ChessPiece::pawn(White, "e2"),
-    ChessPiece::pawn(White, "f2"),
-    ChessPiece::pawn(White, "g2"),
-    ChessPiece::pawn(White, "h2"),
-    
-    ChessPiece::rook(Black, "a8"),
-    ChessPiece::knight(Black, "b8"),
-    ChessPiece::bishop(Black, "c8"),
-    ChessPiece::queen(Black, "d8"),
-    ChessPiece::king(Black, "e8"),
-    ChessPiece::bishop(Black, "f8"),
-    ChessPiece::knight(Black, "g8"),
-    ChessPiece::rook(Black, "h8"),
-    ChessPiece::pawn(Black, "a7"),
-    ChessPiece::pawn(Black, "b7"),
-    ChessPiece::pawn(Black, "c7"),
-    ChessPiece::pawn(Black, "d7"),
-    ChessPiece::pawn(Black, "e7"),
-    ChessPiece::pawn(Black, "f7"),
-    ChessPiece::pawn(Black, "g7"),
-    ChessPiece::pawn(Black, "h7"),
-  ]);
+  let mut game = Game::default();
 
   println!("{}", game.render_board());
 
