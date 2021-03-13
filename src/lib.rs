@@ -146,12 +146,40 @@ pub fn game_v4() {
         else if command == "history" {
           println!("{}", game.history(None));
         }
+        else if command == "help" {
+          help_v4();
+        }
       }
       None => {
         println!("Plese provide a command")
       }
     }
   }
+}
+
+
+fn help_v4() {
+  println!("
+  Commands for version 4
+  ---------------------------------------------------------------------------------------------
+  board                         Display the current state of the game board.
+
+  move <from> <to> [opts]       Move a piece on the board.
+                                  > move e2 e4
+                                [opts]:
+                                  -f --force      Move the piece <from> tile x <to> to tile b 
+                                                  regardless of whether or not the move is legal
+
+  moves <from>                  Display available moves for the piece at a given position <from>
+                                  > moves e2
+
+  undo                          Undo the last move. Reverts the game board to its state prior to 
+                                the last executed 'move' command.
+
+  history                       Display the move history.
+
+  help                          Display this list of commands.
+  ");
 }
 
 
@@ -244,7 +272,7 @@ pub fn game_v3() {
         }
 
         else if command == "help" {
-          help();
+          help_v3();
         }
 
         else {
@@ -269,7 +297,7 @@ fn user_input() -> Result<String, io::Error> {
 }
 
 
-fn help() {
+fn help_v3() {
   println!("
     peek <position>               Show the piece at the given position>
                                     > peek e2

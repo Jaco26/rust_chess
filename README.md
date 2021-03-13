@@ -2,6 +2,8 @@
 It's a chess REPL
 
 ## Commands
+
+#### `cargo run v3`
 ```
 peek <position>               Show the piece at the given position>
 
@@ -68,4 +70,25 @@ vector <from> ...direction    Get a list of tiles a piece would land on by
 
                                 > vector e2 up 
                                 e3, e4, e5, e6, e7, e8
+```
+
+#### `cargo run v4`
+```
+board                         Display the current state of the game board.
+
+move <from> <to> [opts]       Move a piece on the board.
+                                > move e2 e4
+                              [opts]:
+                                -f --force      Move the piece <from> tile x <to> to tile b 
+                                                regardless of whether or not the move is legal
+
+moves <from>                  Display available moves for the piece at a given position <from>
+                                > moves e2
+
+undo                          Undo the last move. Reverts the game board to its state prior to 
+                              the last executed 'move' command.
+
+history                       Display the move history.
+
+help                          Display this list of commands.
 ```
